@@ -138,7 +138,7 @@ $conn->close();
         <!-- Mobile Menu -->
         <div id="mobileMenu" class="hidden md:hidden bg-primary text-white px-2 py-2">
             <a href="dashboard.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Dashboard</a>
-            <a href="patients.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Patients</a>
+             
             <a href="reports.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Reports</a>
             <a href="settings.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Settings</a>
             <a href="notifications.php" class="block px-2 py-1 text-sm font-medium text-white">Notifications</a>
