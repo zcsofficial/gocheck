@@ -84,6 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->query("UPDATE users SET profile_completed = 1 WHERE id = $user_id");
 
         $conn->commit();
+        $success = "Profile updated successfully!";
         header("Location: dashboard.php");
         exit();
     } catch (Exception $e) {
@@ -98,88 +99,334 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Setup - GoCheck</title>
+    <title>Health Profile Setup - GoCheck</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .hidden { display: none; }
+    </style>
     <script>
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
-            document.getElementById(sectionId).classList.remove('hidden');
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2F4F2F',
+                        secondary: '#C3B091'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
         }
     </script>
 </head>
-<body class="bg-gray-900 text-white">
-<div class="container mx-auto p-8">
-    <h2 class="text-2xl font-bold mb-4">Complete Your Profile</h2>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-5xl mx-auto px-4 py-8">
+        <header class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Health Profile Setup</h1>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600">Progress</span>
+                    <div class="w-48 h-2 bg-gray-200 rounded-full">
+                        <div class="w-0 h-full bg-primary rounded-full transition-all duration-500" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-    <form method="POST" enctype="multipart/form-data">
-        <div id="profile-section" class="section">
-            <h3 class="text-lg font-semibold mb-4">Profile Information</h3>
-            <input type="file" name="profile_photo" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-            <input type="number" name="age" placeholder="Age" class="block w-full p-2 mb-2 bg-gray-700 text-white" min="0" max="120">
-            <select name="gender" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-            </select>
-            <input type="number" name="height" placeholder="Height" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-            <select name="height_unit" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-                <option value="cm">cm</option>
-                <option value="ft">ft</option>
-            </select>
-            <input type="number" name="weight" placeholder="Weight" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-            <select name="weight_unit" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-                <option value="kg">kg</option>
-                <option value="lbs">lbs</option>
-            </select>
-            <select name="blood_group" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-                <option value="">Select Blood Group</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-            </select>
-            <button type="button" onclick="showSection('medical-section')" class="mt-4 bg-green-500 px-4 py-2 rounded">Next</button>
+        <form method="POST" enctype="multipart/form-data" id="healthProfileForm" class="space-y-8">
+            <?php if ($error): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline"><?php echo $error; ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($success): ?>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline"><?php echo $success; ?></span>
+                </div>
+            <?php endif; ?>
+
+            <section class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6">Personal Information</h2>
+                <div class="flex items-start gap-8">
+                    <div class="flex flex-col items-center">
+                        <div class="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center relative overflow-hidden mb-2">
+                            <img id="previewImage" class="w-full h-full object-cover hidden">
+                            <i class="ri-user-3-line text-gray-400 ri-3x"></i>
+                            <input type="file" name="profile_photo" id="profilePhoto" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+                        <span class="text-sm text-gray-600">Upload Photo</span>
+                    </div>
+                    
+                    <div class="flex-1 grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                            <input type="number" name="age" value="<?php echo isset($_POST['age']) ? htmlspecialchars($_POST['age']) : ''; ?>" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Enter age" min="0" max="120">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="gender" value="Male" class="w-4 h-4 text-primary" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'Male') ? 'checked' : ''; ?>>
+                                    <span class="ml-2 text-sm">Male</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="gender" value="Female" class="w-4 h-4 text-primary" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'Female') ? 'checked' : ''; ?>>
+                                    <span class="ml-2 text-sm">Female</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="gender" value="Other" class="w-4 h-4 text-primary" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'Other') ? 'checked' : ''; ?>>
+                                    <span class="ml-2 text-sm">Other</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Height</label>
+                            <div class="flex gap-2">
+                                <input type="number" name="height" value="<?php echo isset($_POST['height']) ? htmlspecialchars($_POST['height']) : ''; ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Height" step="0.01">
+                                <select name="height_unit" class="w-20 px-2 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+                                    <option value="cm" <?php echo (isset($_POST['height_unit']) && $_POST['height_unit'] == 'cm') ? 'selected' : ''; ?>>cm</option>
+                                    <option value="ft" <?php echo (isset($_POST['height_unit']) && $_POST['height_unit'] == 'ft') ? 'selected' : ''; ?>>ft</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+                            <div class="flex gap-2">
+                                <input type="number" name="weight" value="<?php echo isset($_POST['weight']) ? htmlspecialchars($_POST['weight']) : ''; ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Weight" step="0.01">
+                                <select name="weight_unit" class="w-20 px-2 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+                                    <option value="kg" <?php echo (isset($_POST['weight_unit']) && $_POST['weight_unit'] == 'kg') ? 'selected' : ''; ?>>kg</option>
+                                    <option value="lbs" <?php echo (isset($_POST['weight_unit']) && $_POST['weight_unit'] == 'lbs') ? 'selected' : ''; ?>>lbs</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
+                            <select name="blood_group" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+                                <option value="">Select blood group</option>
+                                <option value="A+" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'A+') ? 'selected' : ''; ?>>A+</option>
+                                <option value="A-" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'A-') ? 'selected' : ''; ?>>A-</option>
+                                <option value="B+" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'B+') ? 'selected' : ''; ?>>B+</option>
+                                <option value="B-" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'B-') ? 'selected' : ''; ?>>B-</option>
+                                <option value="O+" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'O+') ? 'selected' : ''; ?>>O+</option>
+                                <option value="O-" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'O-') ? 'selected' : ''; ?>>O-</option>
+                                <option value="AB+" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'AB+') ? 'selected' : ''; ?>>AB+</option>
+                                <option value="AB-" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'AB-') ? 'selected' : ''; ?>>AB-</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6">Medical History</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Allergies</label>
+                        <div class="relative">
+                            <input type="text" name="allergies" id="allergyInput" value="<?php echo isset($_POST['allergies']) ? htmlspecialchars($_POST['allergies']) : ''; ?>" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Type to add allergies">
+                            <div id="allergyTags" class="flex flex-wrap gap-2 mt-2"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Additional Medical Information</label>
+                        <textarea name="additional_info" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" rows="3" placeholder="Enter any additional medical information"><?php echo isset($_POST['additional_info']) ? htmlspecialchars($_POST['additional_info']) : ''; ?></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6">Vital Statistics</h2>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Blood Pressure</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="number" name="systolic_bp" value="<?php echo isset($_POST['systolic_bp']) ? htmlspecialchars($_POST['systolic_bp']) : ''; ?>" class="w-24 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Systolic" min="1">
+                            <span class="text-gray-500">/</span>
+                            <input type="number" name="diastolic_bp" value="<?php echo isset($_POST['diastolic_bp']) ? htmlspecialchars($_POST['diastolic_bp']) : ''; ?>" class="w-24 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Diastolic" min="1">
+                            <span class="text-sm text-gray-500">mmHg</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cholesterol</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="number" name="hdl_cholesterol" value="<?php echo isset($_POST['hdl_cholesterol']) ? htmlspecialchars($_POST['hdl_cholesterol']) : ''; ?>" class="w-24 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="HDL" step="0.01">
+                            <span class="text-gray-500">/</span>
+                            <input type="number" name="ldl_cholesterol" value="<?php echo isset($_POST['ldl_cholesterol']) ? htmlspecialchars($_POST['ldl_cholesterol']) : ''; ?>" class="w-24 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="LDL" step="0.01">
+                            <span class="text-sm text-gray-500">mg/dL</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Blood Sugar</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="number" name="fasting_blood_sugar" value="<?php echo isset($_POST['fasting_blood_sugar']) ? htmlspecialchars($_POST['fasting_blood_sugar']) : ''; ?>" class="w-24 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Fasting" step="0.01">
+                            <span class="text-gray-500">/</span>
+                            <input type="number" name="post_meal_blood_sugar" value="<?php echo isset($_POST['post_meal_blood_sugar']) ? htmlspecialchars($_POST['post_meal_blood_sugar']) : ''; ?>" class="w-24 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="PP" step="0.01">
+                            <span class="text-sm text-gray-500">mg/dL</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6">Renal Function Tests</h2>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Urea</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="number" name="urea" value="<?php echo isset($_POST['urea']) ? htmlspecialchars($_POST['urea']) : ''; ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Enter value" step="0.01" min="7" max="20">
+                            <span class="text-sm text-gray-500 whitespace-nowrap">mg/dL</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Creatinine</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="number" name="creatinine" value="<?php echo isset($_POST['creatinine']) ? htmlspecialchars($_POST['creatinine']) : ''; ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Enter value" step="0.01" min="0.7" max="1.3">
+                            <span class="text-sm text-gray-500 whitespace-nowrap">mg/dL</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Uric Acid</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="number" name="uric_acid" value="<?php echo isset($_POST['uric_acid']) ? htmlspecialchars($_POST['uric_acid']) : ''; ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Enter value" step="0.01" min="3.5" max="7.2">
+                            <span class="text-sm text-gray-500 whitespace-nowrap">mg/dL</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Calcium</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="number" name="calcium" value="<?php echo isset($_POST['calcium']) ? htmlspecialchars($_POST['calcium']) : ''; ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" placeholder="Enter value" step="0.01" min="8.5" max="10.5">
+                            <span class="text-sm text-gray-500 whitespace-nowrap">mg/dL</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="flex justify-between items-center">
+                <button type="button" class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-button hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Save as Draft</button>
+                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-button hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Save & Continue</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="toast" class="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 hidden">
+        <div class="flex items-center gap-2">
+            <i class="ri-check-line text-green-500"></i>
+            <span id="toastMessage" class="text-sm text-gray-700"></span>
         </div>
+    </div>
 
-        <div id="medical-section" class="section hidden">
-            <h3 class="text-lg font-semibold mb-4">Medical History</h3>
-            <input type="text" name="allergies" placeholder="Allergies (comma-separated)" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-            <textarea name="additional_info" placeholder="Additional Medical Information" class="block w-full p-2 mb-2 bg-gray-700 text-white" rows="4"></textarea>
-            <button type="button" onclick="showSection('vital-section')" class="mt-4 bg-green-500 px-4 py-2 rounded">Next</button>
-        </div>
+    <script>
+        const profilePhoto = document.getElementById('profilePhoto');
+        const previewImage = document.getElementById('previewImage');
+        const allergyInput = document.getElementById('allergyInput');
+        const allergyTags = document.getElementById('allergyTags');
+        const form = document.getElementById('healthProfileForm');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const progressBar = document.getElementById('progressBar');
 
-        <div id="vital-section" class="section hidden">
-            <h3 class="text-lg font-semibold mb-4">Vital Statistics</h3>
-            <input type="number" name="systolic_bp" placeholder="Systolic Blood Pressure" class="block w-full p-2 mb-2 bg-gray-700 text-white" min="1">
-            <input type="number" name="diastolic_bp" placeholder="Diastolic Blood Pressure" class="block w-full p-2 mb-2 bg-gray-700 text-white" min="1">
-            <input type="number" name="hdl_cholesterol" placeholder="HDL Cholesterol" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-            <input type="number" name="ldl_cholesterol" placeholder="LDL Cholesterol" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-            <input type="number" name="fasting_blood_sugar" placeholder="Fasting Blood Sugar" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-            <input type="number" name="post_meal_blood_sugar" placeholder="Post-Meal Blood Sugar" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white">
-            <button type="button" onclick="showSection('renal-section')" class="mt-4 bg-green-500 px-4 py-2 rounded">Next</button>
-        </div>
+        let allergies = new Set();
 
-        <div id="renal-section" class="section hidden">
-            <h3 class="text-lg font-semibold mb-4">Renal Tests</h3>
-            <input type="number" name="urea" placeholder="Urea Level" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white" min="7" max="20">
-            <input type="number" name="creatinine" placeholder="Creatinine Level" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white" min="0.7" max="1.3">
-            <input type="number" name="uric_acid" placeholder="Uric Acid Level" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white" min="3.5" max="7.2">
-            <input type="number" name="calcium" placeholder="Calcium Level" step="0.01" class="block w-full p-2 mb-2 bg-gray-700 text-white" min="8.5" max="10.5">
-            <button type="submit" class="mt-4 bg-blue-500 px-4 py-2 rounded">Submit</button>
-        </div>
-    </form>
+        profilePhoto.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
 
-    <?php if ($error): ?>
-        <p class="text-red-500"><?php echo $error; ?></p>
-    <?php endif; ?>
-    <?php if ($success): ?>
-        <p class="text-green-500"><?php echo $success; ?></p>
-    <?php endif; ?>
-</div>
+        allergyInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                e.preventDefault();
+                const allergy = this.value.trim();
+                if (!allergies.has(allergy)) {
+                    allergies.add(allergy);
+                    const tag = document.createElement('span');
+                    tag.className = 'px-2 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1';
+                    tag.innerHTML = `${allergy}<button type="button" class="hover:text-primary/80"><i class="ri-close-line"></i></button>`;
+                    tag.querySelector('button').onclick = function() {
+                        allergies.delete(allergy);
+                        tag.remove();
+                    };
+                    allergyTags.appendChild(tag);
+                }
+                this.value = '';
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect allergies into a single string
+            const allergyArray = Array.from(allergies);
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'allergies';
+            hiddenInput.value = allergyArray.join(', ');
+            this.appendChild(hiddenInput);
+
+            this.submit();
+        });
+
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function updateProgress() {
+            const inputs = form.querySelectorAll('input, select, textarea');
+            let filled = 0;
+            inputs.forEach(input => {
+                if (input.value.trim() || (input.type === 'radio' && input.checked)) filled++;
+            });
+            const progress = (filled / inputs.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        form.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('change', updateProgress);
+        });
+
+        // Initial progress update
+        updateProgress();
+    </script>
 </body>
 </html>
