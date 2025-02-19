@@ -3,7 +3,7 @@ session_start();
 include 'config.php';  // Database connection
 include 'alert.php';
 
-// Check if user is logged in
+// Check if user is not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -107,18 +107,33 @@ $conn->close();
         }
         .error { color: red; font-size: 0.75rem; margin-top: 0.25rem; display: none; }
         @media (max-width: 640px) {
+            nav { padding: 0.5rem; }
+            .flex.justify-between.h-16 { height: auto; flex-wrap: wrap; justify-content: center; }
+            .ml-10 { margin-left: 0; }
+            .text-2xl { font-size: 1.5rem; }
+            .text-lg { font-size: 1rem; }
+            .text-sm { font-size: 0.875rem; }
+            .p-6 { padding: 0.75rem; }
+            .px-6 { padding-left: 0.75rem; padding-right: 0.75rem; }
+            .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+            .w-24 { width: 6rem; }
+            .h-24 { height: 6rem; }
+            .w-8 { width: 2rem; }
+            .h-8 { height: 2rem; }
+            .ri-xl { font-size: 1rem; }
             .grid-cols-12 { grid-template-columns: 1fr; }
             .col-span-3, .col-span-9 { grid-column: span 12; }
             .modal-content { width: 90%; }
-            nav { padding: 0.5rem; }
-            .flex.justify-between.h-16 { height: auto; flex-wrap: wrap; }
-            .ml-10 { margin-left: 0; }
+            .space-x-4 { gap: 0.5rem; }
+            .space-y-2 { gap: 0.5rem; }
+            .h-64 { height: 200px; }
         }
         @media (min-width: 641px) and (max-width: 1024px) {
             .grid-cols-12 { grid-template-columns: repeat(6, 1fr); }
             .col-span-3 { grid-column: span 6; }
             .col-span-9 { grid-column: span 6; }
             .modal-content { width: 80%; }
+            .h-64 { height: 250px; }
         }
     </style>
     <script>
@@ -147,143 +162,165 @@ $conn->close();
     </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
+    <!-- Mobile-Friendly Navigation with Hamburger Menu -->
     <nav class="bg-primary fixed w-full top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="max-w-7xl mx-auto px-2 sm:px-4">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center flex-wrap">
-                    <span class="text-white text-2xl font-['Pacifico']">GoCheck</span>
-                    <div class="ml-10 flex items-center space-x-4 flex-wrap">
-                        <a href="dashboard.php" class="text-white px-3 py-2 text-sm font-medium">Dashboard</a>
-                        
-                        <a href="reports.php" class="text-secondary hover:text-white px-3 py-2 text-sm font-medium">Reports</a>
-                        <a href="settings.php" class="text-secondary hover:text-white px-3 py-2 text-sm font-medium">Settings</a>
-                    </div>
+                    <span class="text-white text-xl sm:text-2xl font-['Pacifico']">GoCheck</span>
                 </div>
-                <div class="flex items-center space-x-4 flex-wrap">
-                    <a href="notifications.php" class="text-secondary hover:text-white w-8 h-8 flex items-center justify-center">
-                        <i class="ri-notification-3-line text-xl"></i>
-                    </a>
-                    <a href="profile.php" class="text-secondary hover:text-white w-8 h-8 flex items-center justify-center">
-                        <i class="ri-user-line text-xl"></i>
-                    </a>
-                    <a href="logout.php" class="text-secondary hover:text-white px-4 py-2 text-sm font-medium !rounded-button hover:bg-secondary/20">Logout</a>
+                <div class="flex items-center gap-2 sm:gap-4 md:hidden">
+                    <button id="menuButton" class="text-white focus:outline-none">
+                        <i class="ri-menu-line ri-xl sm:ri-2x"></i>
+                    </button>
+                </div>
+                <div class="hidden md:flex items-center gap-2 sm:gap-4 flex-wrap">
+                    <div class="flex items-center space-x-2 sm:space-x-4 flex-wrap">
+                        <a href="dashboard.php" class="text-white px-2 sm:px-3 py-1 sm:py-2 text-sm font-medium">Dashboard</a>
+                        
+                        <a href="reports.php" class="text-secondary hover:text-white px-2 sm:px-3 py-1 sm:py-2 text-sm font-medium">Reports</a>
+                        <a href="settings.php" class="text-secondary hover:text-white px-2 sm:px-3 py-1 sm:py-2 text-sm font-medium">Settings</a>
+                    </div>
+                    <div class="flex items-center space-x-2 sm:space-x-4 flex-wrap">
+                        <a href="notifications.php" class="text-secondary hover:text-white w-6 sm:w-8 h-6 sm:h-8 flex items-center justify-center">
+                            <i class="ri-notification-3-line text-lg sm:text-xl"></i>
+                        </a>
+                        <a href="profile.php" class="text-secondary hover:text-white w-6 sm:w-8 h-6 sm:h-8 flex items-center justify-center">
+                            <i class="ri-user-line text-lg sm:text-xl"></i>
+                        </a>
+                        <a href="logout.php" class="!rounded-button bg-secondary/20 text-secondary hover:text-white px-2 sm:px-4 py-1 sm:py-2 text-sm font-medium hover:bg-secondary/30">Logout</a>
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-primary text-white px-2 py-2">
+            <a href="dashboard.php" class="block px-2 py-1 text-sm font-medium text-white">Dashboard</a>
+            <a href="patients.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Patients</a>
+            <a href="reports.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Reports</a>
+            <a href="settings.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Settings</a>
+            <a href="notifications.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white flex items-center">
+                <i class="ri-notification-3-line mr-2 text-lg"></i> Notifications
+            </a>
+            <a href="profile.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white flex items-center">
+                <i class="ri-user-line mr-2 text-lg"></i> Profile
+            </a>
+            <a href="logout.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white !rounded-button bg-secondary/20 hover:bg-secondary/30">Logout</a>
+        </div>
     </nav>
 
-    <main class="pt-20 pb-8 px-4">
+    <main class="pt-16 sm:pt-20 pb-6 sm:pb-8 px-2 sm:px-4">
         <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-12 gap-6">
-                <div class="col-span-3">
-                    <div class="bg-white rounded-lg p-6 shadow-sm">
+            <div class="flex flex-col md:grid md:grid-cols-12 gap-4 sm:gap-6">
+                <div class="md:col-span-3">
+                    <div class="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
                         <div class="flex flex-col items-center">
-                            <div class="w-24 h-24 rounded-full bg-secondary mb-4 overflow-hidden">
+                            <div class="w-20 sm:w-24 h-20 sm:h-24 rounded-full bg-secondary mb-2 sm:mb-4 overflow-hidden">
                                 <img src="<?php echo $profile['profile_photo'] ?: 'https://public.readdy.ai/ai/img_res/9b4fe9c3650fdb605f69787c8e9898b5.jpg'; ?>" class="w-full h-full object-cover" alt="Profile">
                             </div>
-                            <h2 class="text-lg font-semibold text-gray-900"><?php echo htmlspecialchars($user['name']); ?></h2>
-                            <p class="text-sm text-gray-600 mb-4">Patient ID: PT-<?php echo date('Ymd') . '-' . $user_id; ?></p>
-                            <div class="w-full space-y-2">
-                                <div class="flex justify-between text-sm">
+                            <h2 class="text-base sm:text-lg font-semibold text-gray-900"><?php echo htmlspecialchars($user['name']); ?></h2>
+                            <p class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-4">Patient ID: PT-<?php echo date('Ymd') . '-' . $user_id; ?></p>
+                            <div class="w-full space-y-1 sm:space-y-2">
+                                <div class="flex justify-between text-xs sm:text-sm">
                                     <span class="text-gray-600">Age:</span>
                                     <span class="text-gray-900"><?php echo htmlspecialchars($profile['age'] ?? 'N/A'); ?> years</span>
                                 </div>
-                                <div class="flex justify-between text-sm">
+                                <div class="flex justify-between text-xs sm:text-sm">
                                     <span class="text-gray-600">Gender:</span>
                                     <span class="text-gray-900"><?php echo htmlspecialchars($profile['gender'] ?? 'N/A'); ?></span>
                                 </div>
-                                <div class="flex justify-between text-sm">
+                                <div class="flex justify-between text-xs sm:text-sm">
                                     <span class="text-gray-600">Contact:</span>
                                     <span class="text-gray-900"><?php echo htmlspecialchars($user['contact_number'] ?? 'N/A'); ?></span>
                                 </div>
                             </div>
-                            <div class="flex space-x-2 mt-4">
-                                <a href="profile.php" class="px-6 py-2 bg-primary text-white rounded-button hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Edit Profile</a>
-                                <a href="reports.php" class="px-6 py-2 border border-primary text-primary rounded-button hover:bg-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">View Details</a>
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-2 sm:mt-4 w-full">
+                                <a href="profile.php" class="w-full sm:w-auto px-3 sm:px-6 py-1 sm:py-2 bg-primary text-white rounded-button hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-xs sm:text-sm">Edit Profile</a>
+                                <a href="reports.php" class="w-full sm:w-auto px-3 sm:px-6 py-1 sm:py-2 border border-primary text-primary rounded-button hover:bg-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-xs sm:text-sm">View Details</a>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg p-6 shadow-sm mt-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center p-3 bg-green-50 rounded">
+                    <div class="bg-white rounded-lg p-4 sm:p-6 shadow-sm mt-4 sm:mt-6">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-4">Quick Stats</h3>
+                        <div class="space-y-2 sm:space-y-4">
+                            <div class="flex justify-between items-center p-2 sm:p-3 bg-green-50 rounded">
                                 <div>
-                                    <p class="text-sm text-gray-600">Last Check-up</p>
-                                    <p class="font-medium text-gray-900"><?php echo date('M d, Y', strtotime('-4 days')); ?></p>
+                                    <p class="text-xs sm:text-sm text-gray-600">Last Check-up</p>
+                                    <p class="font-medium text-gray-900 text-xs sm:text-sm"><?php echo date('M d, Y', strtotime('-4 days')); ?></p>
                                 </div>
-                                <i class="ri-calendar-check-line text-green-600"></i>
+                                <i class="ri-calendar-check-line text-green-600 text-sm sm:text-base"></i>
                             </div>
-                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded">
+                            <div class="flex justify-between items-center p-2 sm:p-3 bg-blue-50 rounded">
                                 <div>
-                                    <p class="text-sm text-gray-600">Next Appointment</p>
-                                    <p class="font-medium text-gray-900"><?php echo date('M d, Y', strtotime('+14 days')); ?></p>
+                                    <p class="text-xs sm:text-sm text-gray-600">Next Appointment</p>
+                                    <p class="font-medium text-gray-900 text-xs sm:text-sm"><?php echo date('M d, Y', strtotime('+14 days')); ?></p>
                                 </div>
-                                <i class="ri-calendar-todo-line text-blue-600"></i>
+                                <i class="ri-calendar-todo-line text-blue-600 text-sm sm:text-base"></i>
                             </div>
-                            <div class="flex justify-between items-center p-3 bg-yellow-50 rounded">
+                            <div class="flex justify-between items-center p-2 sm:p-3 bg-yellow-50 rounded">
                                 <div>
-                                    <p class="text-sm text-gray-600">Health Status</p>
-                                    <p class="font-medium text-gray-900">Good</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">Health Status</p>
+                                    <p class="font-medium text-gray-900 text-xs sm:text-sm">Good</p>
                                 </div>
-                                <i class="ri-heart-pulse-line text-yellow-600"></i>
+                                <i class="ri-heart-pulse-line text-yellow-600 text-sm sm:text-base"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-span-9">
-                    <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-2xl font-semibold text-gray-900">Health Metrics Dashboard</h1>
-                        <button id="updateDataBtn" class="px-6 py-2 bg-primary text-white rounded-button hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center">
-                            <i class="ri-refresh-line mr-2"></i>
+                <div class="md:col-span-9">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6">
+                        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Health Metrics Dashboard</h1>
+                        <button id="updateDataBtn" class="px-3 sm:px-6 py-1 sm:py-2 bg-primary text-white rounded-button hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center text-xs sm:text-sm">
+                            <i class="ri-refresh-line mr-1 sm:mr-2 text-sm sm:text-base"></i>
                             Update Data
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Blood Sugar</h3>
-                                    <p class="text-sm text-gray-600">Last updated: <?php echo date('F d, Y h:i A'); ?></p>
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Blood Sugar</h3>
+                                    <p class="text-xs sm:text-sm text-gray-600">Last updated: <?php echo date('F d, Y h:i A'); ?></p>
                                 </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 text-sm rounded">Normal</span>
+                                <span class="px-1 sm:px-2 py-0.5 sm:py-1 bg-green-100 text-green-800 text-xs sm:text-sm rounded mt-1 sm:mt-0">Normal</span>
                             </div>
-                            <div id="sugarChart" class="w-full h-64"></div>
+                            <div id="sugarChart" class="w-full h-40 sm:h-64"></div>
                         </div>
 
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
+                        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Blood Pressure</h3>
-                                    <p class="text-sm text-gray-600">Last updated: <?php echo date('F d, Y h:i A'); ?></p>
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Blood Pressure</h3>
+                                    <p class="text-xs sm:text-sm text-gray-600">Last updated: <?php echo date('F d, Y h:i A'); ?></p>
                                 </div>
-                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-sm rounded">Elevated</span>
+                                <span class="px-1 sm:px-2 py-0.5 sm:py-1 bg-yellow-100 text-yellow-800 text-xs sm:text-sm rounded mt-1 sm:mt-0">Elevated</span>
                             </div>
-                            <div id="bpChart" class="w-full h-64"></div>
+                            <div id="bpChart" class="w-full h-40 sm:h-64"></div>
                         </div>
 
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
+                        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Cholesterol Levels</h3>
-                                    <p class="text-sm text-gray-600">Last updated: <?php echo date('F d, Y h:i A'); ?></p>
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Cholesterol Levels</h3>
+                                    <p class="text-xs sm:text-sm text-gray-600">Last updated: <?php echo date('F d, Y h:i A'); ?></p>
                                 </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 text-sm rounded">Normal</span>
+                                <span class="px-1 sm:px-2 py-0.5 sm:py-1 bg-green-100 text-green-800 text-xs sm:text-sm rounded mt-1 sm:mt-0">Normal</span>
                             </div>
-                            <div id="cholesterolChart" class="w-full h-64"></div>
+                            <div id="cholesterolChart" class="w-full h-40 sm:h-64"></div>
                         </div>
 
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
+                        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 sm:mb-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Kidney Function (RFT)</h3>
-                                    <p class="text-sm text-gray-600">Last updated: <?php echo date('F d, Y h:i A'); ?></p>
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Kidney Function (RFT)</h3>
+                                    <p class="text-xs sm:text-sm text-gray-600">Last updated: <?php echo date('F d, Y h:i A'); ?></p>
                                 </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 text-sm rounded">Normal</span>
+                                <span class="px-1 sm:px-2 py-0.5 sm:py-1 bg-green-100 text-green-800 text-xs sm:text-sm rounded mt-1 sm:mt-0">Normal</span>
                             </div>
-                            <div id="rftChart" class="w-full h-64"></div>
+                            <div id="rftChart" class="w-full h-40 sm:h-64"></div>
                         </div>
                     </div>
                 </div>
@@ -292,95 +329,100 @@ $conn->close();
     </main>
 
     <div id="updateModal" class="modal items-center justify-center">
-        <div class="bg-white rounded-lg shadow-sm modal-content p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-semibold text-gray-900">Update Health Data</h3>
+        <div class="bg-white rounded-lg shadow-sm modal-content p-4 sm:p-6">
+            <div class="flex justify-between items-center mb-4 sm:mb-6">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Update Health Data</h3>
                 <button id="closeModal" class="text-gray-400 hover:text-gray-600">
-                    <i class="ri-close-line text-xl"></i>
+                    <i class="ri-close-line text-lg sm:text-xl"></i>
                 </button>
             </div>
-            <form id="healthDataForm" class="space-y-6" action="update_health.php" method="POST">
+            <form id="healthDataForm" class="space-y-4 sm:space-y-6" action="update_health.php" method="POST">
                 <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Fasting Blood Sugar (mg/dL)</label>
-                    <input type="number" name="fasting_blood_sugar" value="<?php echo htmlspecialchars($vital['fasting_blood_sugar'] ?? ''); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="0">
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Fasting Blood Sugar (mg/dL)</label>
+                    <input type="number" name="fasting_blood_sugar" value="<?php echo htmlspecialchars($vital['fasting_blood_sugar'] ?? ''); ?>" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="0">
                     <span class="error" id="fasting_blood_sugar_error">Must be a positive number.</span>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Post Meal Blood Sugar (mg/dL)</label>
-                    <input type="number" name="post_meal_blood_sugar" value="<?php echo htmlspecialchars($vital['post_meal_blood_sugar'] ?? ''); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="0">
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Post Meal Blood Sugar (mg/dL)</label>
+                    <input type="number" name="post_meal_blood_sugar" value="<?php echo htmlspecialchars($vital['post_meal_blood_sugar'] ?? ''); ?>" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="0">
                     <span class="error" id="post_meal_blood_sugar_error">Must be a positive number.</span>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Systolic BP (mmHg)</label>
-                        <input type="number" name="systolic_bp" value="<?php echo htmlspecialchars($vital['systolic_bp'] ?? ''); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="1">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Systolic BP (mmHg)</label>
+                        <input type="number" name="systolic_bp" value="<?php echo htmlspecialchars($vital['systolic_bp'] ?? ''); ?>" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="1">
                         <span class="error" id="systolic_bp_error">Must be greater than 0.</span>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Diastolic BP (mmHg)</label>
-                        <input type="number" name="diastolic_bp" value="<?php echo htmlspecialchars($vital['diastolic_bp'] ?? ''); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="1">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Diastolic BP (mmHg)</label>
+                        <input type="number" name="diastolic_bp" value="<?php echo htmlspecialchars($vital['diastolic_bp'] ?? ''); ?>" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="1">
                         <span class="error" id="diastolic_bp_error">Must be greater than 0.</span>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">HDL Cholesterol (mg/dL)</label>
-                    <input type="number" name="hdl_cholesterol" value="<?php echo htmlspecialchars($vital['hdl_cholesterol'] ?? ''); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="0">
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">HDL Cholesterol (mg/dL)</label>
+                    <input type="number" name="hdl_cholesterol" value="<?php echo htmlspecialchars($vital['hdl_cholesterol'] ?? ''); ?>" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="0">
                     <span class="error" id="hdl_cholesterol_error">Must be a positive number.</span>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">LDL Cholesterol (mg/dL)</label>
-                    <input type="number" name="ldl_cholesterol" value="<?php echo htmlspecialchars($vital['ldl_cholesterol'] ?? ''); ?>" class="w-full px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="0">
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">LDL Cholesterol (mg/dL)</label>
+                    <input type="number" name="ldl_cholesterol" value="<?php echo htmlspecialchars($vital['ldl_cholesterol'] ?? ''); ?>" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="0">
                     <span class="error" id="ldl_cholesterol_error">Must be a positive number.</span>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Urea (mg/dL)</label>
-                    <div class="flex gap-2 items-center">
-                        <input type="number" name="urea" value="<?php echo htmlspecialchars($renal['urea'] ?? ''); ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="7" max="20">
-                        <span class="text-sm text-gray-600 whitespace-nowrap">mg/dL</span>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Urea (mg/dL)</label>
+                    <div class="flex gap-1 sm:gap-2 items-center">
+                        <input type="number" name="urea" value="<?php echo htmlspecialchars($renal['urea'] ?? ''); ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="7" max="20">
+                        <span class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">mg/dL</span>
                     </div>
                     <span class="error" id="urea_error">Must be between 7 and 20.</span>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Creatinine (mg/dL)</label>
-                    <div class="flex gap-2 items-center">
-                        <input type="number" name="creatinine" value="<?php echo htmlspecialchars($renal['creatinine'] ?? ''); ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="0.7" max="1.3">
-                        <span class="text-sm text-gray-600 whitespace-nowrap">mg/dL</span>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Creatinine (mg/dL)</label>
+                    <div class="flex gap-1 sm:gap-2 items-center">
+                        <input type="number" name="creatinine" value="<?php echo htmlspecialchars($renal['creatinine'] ?? ''); ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="0.7" max="1.3">
+                        <span class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">mg/dL</span>
                     </div>
                     <span class="error" id="creatinine_error">Must be between 0.7 and 1.3.</span>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Uric Acid (mg/dL)</label>
-                    <div class="flex gap-2 items-center">
-                        <input type="number" name="uric_acid" value="<?php echo htmlspecialchars($renal['uric_acid'] ?? ''); ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="3.5" max="7.2">
-                        <span class="text-sm text-gray-600 whitespace-nowrap">mg/dL</span>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Uric Acid (mg/dL)</label>
+                    <div class="flex gap-1 sm:gap-2 items-center">
+                        <input type="number" name="uric_acid" value="<?php echo htmlspecialchars($renal['uric_acid'] ?? ''); ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="3.5" max="7.2">
+                        <span class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">mg/dL</span>
                     </div>
                     <span class="error" id="uric_acid_error">Must be between 3.5 and 7.2.</span>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Calcium (mg/dL)</label>
-                    <div class="flex gap-2 items-center">
-                        <input type="number" name="calcium" value="<?php echo htmlspecialchars($renal['calcium'] ?? ''); ?>" class="flex-1 px-4 py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-sm" required min="8.5" max="10.5">
-                        <span class="text-sm text-gray-600 whitespace-nowrap">mg/dL</span>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Calcium (mg/dL)</label>
+                    <div class="flex gap-1 sm:gap-2 items-center">
+                        <input type="number" name="calcium" value="<?php echo htmlspecialchars($renal['calcium'] ?? ''); ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required min="8.5" max="10.5">
+                        <span class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">mg/dL</span>
                     </div>
                     <span class="error" id="calcium_error">Must be between 8.5 and 10.5.</span>
                 </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" id="cancelUpdate" class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-button hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Cancel</button>
-                    <button type="submit" class="px-6 py-2 bg-primary text-white rounded-button hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">Save Changes</button>
+                <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
+                    <button type="button" id="cancelUpdate" class="w-full sm:w-auto px-3 sm:px-6 py-1 sm:py-2 bg-white border border-gray-300 text-gray-700 rounded-button hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-xs sm:text-sm">Cancel</button>
+                    <button type="submit" class="w-full sm:w-auto px-3 sm:px-6 py-1 sm:py-2 bg-primary text-white rounded-button hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-xs sm:text-sm">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="toast" class="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 hidden">
-        <div class="flex items-center gap-2">
-            <i class="ri-check-line text-green-500"></i>
-            <span id="toastMessage" class="text-sm text-gray-700"></span>
+    <div id="toast" class="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-2 sm:p-4 hidden">
+        <div class="flex items-center gap-1 sm:gap-2">
+            <i class="ri-check-line text-green-500 text-sm sm:text-base"></i>
+            <span id="toastMessage" class="text-xs sm:text-sm text-gray-700"></span>
         </div>
     </div>
 
     <script>
+        // Toggle mobile menu
+        document.getElementById('menuButton').addEventListener('click', function() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+
         const realData = {
             sugar: {
                 dates: ['Feb 13', 'Feb 14', 'Feb 15', 'Feb 16', 'Feb 17', 'Feb 18', 'Feb 19'],
@@ -449,17 +491,19 @@ $conn->close();
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     borderColor: '#e5e7eb',
                     borderWidth: 1,
-                    textStyle: { color: '#1f2937' }
+                    textStyle: { color: '#1f2937', fontSize: 10 }
                 },
-                grid: { top: 20, right: 20, bottom: 20, left: 50 },
+                grid: { top: 20, right: 10, bottom: 20, left: 30 },
                 xAxis: {
                     type: 'category',
                     data: realData.sugar.dates,
-                    axisLine: { lineStyle: { color: '#e5e7eb' } }
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { fontSize: 10 }
                 },
                 yAxis: {
                     type: 'value',
-                    axisLine: { lineStyle: { color: '#e5e7eb' } }
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { fontSize: 10 }
                 },
                 series: [{
                     data: realData.sugar.values,
@@ -484,17 +528,19 @@ $conn->close();
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     borderColor: '#e5e7eb',
                     borderWidth: 1,
-                    textStyle: { color: '#1f2937' }
+                    textStyle: { color: '#1f2937', fontSize: 10 }
                 },
-                grid: { top: 20, right: 20, bottom: 20, left: 50 },
+                grid: { top: 20, right: 10, bottom: 20, left: 30 },
                 xAxis: {
                     type: 'category',
                     data: realData.bp.dates,
-                    axisLine: { lineStyle: { color: '#e5e7eb' } }
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { fontSize: 10 }
                 },
                 yAxis: {
                     type: 'value',
-                    axisLine: { lineStyle: { color: '#e5e7eb' } }
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { fontSize: 10 }
                 },
                 series: [{
                     name: 'Systolic',
@@ -517,17 +563,19 @@ $conn->close();
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     borderColor: '#e5e7eb',
                     borderWidth: 1,
-                    textStyle: { color: '#1f2937' }
+                    textStyle: { color: '#1f2937', fontSize: 10 }
                 },
-                grid: { top: 20, right: 20, bottom: 20, left: 50 },
+                grid: { top: 20, right: 10, bottom: 20, left: 30 },
                 xAxis: {
                     type: 'category',
                     data: realData.cholesterol.dates,
-                    axisLine: { lineStyle: { color: '#e5e7eb' } }
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { fontSize: 10 }
                 },
                 yAxis: {
                     type: 'value',
-                    axisLine: { lineStyle: { color: '#e5e7eb' } }
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { fontSize: 10 }
                 },
                 series: [{
                     data: realData.cholesterol.values,
@@ -552,17 +600,19 @@ $conn->close();
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     borderColor: '#e5e7eb',
                     borderWidth: 1,
-                    textStyle: { color: '#1f2937' }
+                    textStyle: { color: '#1f2937', fontSize: 10 }
                 },
-                grid: { top: 20, right: 20, bottom: 20, left: 50 },
+                grid: { top: 20, right: 10, bottom: 20, left: 30 },
                 xAxis: {
                     type: 'category',
                     data: realData.rft.dates,
-                    axisLine: { lineStyle: { color: '#e5e7eb' } }
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { fontSize: 10 }
                 },
                 yAxis: {
                     type: 'value',
-                    axisLine: { lineStyle: { color: '#e5e7eb' } }
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { fontSize: 10 }
                 },
                 series: [{
                     data: realData.rft.values,

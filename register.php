@@ -53,8 +53,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#4A5D4B',
-                        secondary: '#C4B5A6'
+                        primary: '#2F4F2F',
+                        secondary: '#BFB1A4'
                     },
                     borderRadius: {
                         'none': '0px',
