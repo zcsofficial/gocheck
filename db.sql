@@ -60,3 +60,11 @@ CREATE TABLE notifications (
     read_status TINYINT(1) DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+CREATE TABLE health_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    exercise_plan TEXT,           -- JSON-encoded array of exercises
+    diet_plan TEXT,              -- JSON-encoded array of diet meals
+    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the plan was generated
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

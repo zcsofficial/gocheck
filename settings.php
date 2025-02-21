@@ -1,7 +1,7 @@
 <?php
 session_start();
 include 'config.php';
-include 'alert.php';  // Database connection
+
 
 // Check if user is not logged in
 if (!isset($_SESSION['user_id'])) {

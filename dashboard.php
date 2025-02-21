@@ -177,7 +177,7 @@ $conn->close();
                 <div class="hidden md:flex items-center gap-2 sm:gap-4 flex-wrap">
                     <div class="flex items-center space-x-2 sm:space-x-4 flex-wrap">
                         <a href="dashboard.php" class="text-white px-2 sm:px-3 py-1 sm:py-2 text-sm font-medium">Dashboard</a>
-                        
+                        <a href="exercise.php" class="text-secondary font-medium">Exercise & Diet</a>
                         <a href="reports.php" class="text-secondary hover:text-white px-2 sm:px-3 py-1 sm:py-2 text-sm font-medium">Reports</a>
                         <a href="settings.php" class="text-secondary hover:text-white px-2 sm:px-3 py-1 sm:py-2 text-sm font-medium">Settings</a>
                     </div>
@@ -196,7 +196,7 @@ $conn->close();
         <!-- Mobile Menu -->
         <div id="mobileMenu" class="hidden md:hidden bg-primary text-white px-2 py-2">
             <a href="dashboard.php" class="block px-2 py-1 text-sm font-medium text-white">Dashboard</a>
-             
+            <a href="exercise.php" class="block py-2 text-secondary">Exercise & Diet</a>
             <a href="reports.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Reports</a>
             <a href="settings.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white">Settings</a>
             <a href="notifications.php" class="block px-2 py-1 text-sm font-medium text-secondary hover:text-white flex items-center">
