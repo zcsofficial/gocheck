@@ -46,7 +46,7 @@ CREATE TABLE vital_statistics (
 CREATE TABLE renal_tests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    urea DECIMAL(5,2) CHECK (urea BETWEEN 7 AND 20), -- Normal range
+    urea DECIMAL(5,2) CHECK (urea BETWEEN 7 AND 24), -- Normal range
     creatinine DECIMAL(5,2) CHECK (creatinine BETWEEN 0.7 AND 1.3),
     uric_acid DECIMAL(5,2) CHECK (uric_acid BETWEEN 3.5 AND 7.2),
     calcium DECIMAL(5,2) CHECK (calcium BETWEEN 8.5 AND 10.5),

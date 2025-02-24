@@ -13,83 +13,88 @@ $success = "";
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $age = $_POST['age'];
-    $gender = $_POST['gender'];
-    $height = $_POST['height'];
-    $height_unit = $_POST['height_unit'];
-    $weight = $_POST['weight'];
-    $weight_unit = $_POST['weight_unit'];
-    $blood_group = $_POST['blood_group'];
-    $allergies = $_POST['allergies'];
-    $additional_info = $_POST['additional_info'];
-    $systolic_bp = $_POST['systolic_bp'];
-    $diastolic_bp = $_POST['diastolic_bp'];
-    $hdl_cholesterol = $_POST['hdl_cholesterol'];
-    $ldl_cholesterol = $_POST['ldl_cholesterol'];
-    $fasting_blood_sugar = $_POST['fasting_blood_sugar'];
-    $post_meal_blood_sugar = $_POST['post_meal_blood_sugar'];
-    $urea = $_POST['urea'];
-    $creatinine = $_POST['creatinine'];
-    $uric_acid = $_POST['uric_acid'];
-    $calcium = $_POST['calcium'];
+    $age = !empty($_POST['age']) ? $_POST['age'] : null;
+    $gender = $_POST['gender'] ?? '';
+    $height = !empty($_POST['height']) ? $_POST['height'] : null;
+    $height_unit = $_POST['height_unit'] ?? 'cm';
+    $weight = !empty($_POST['weight']) ? $_POST['weight'] : null;
+    $weight_unit = $_POST['weight_unit'] ?? 'kg';
+    $blood_group = $_POST['blood_group'] ?? '';
+    $allergies = !empty($_POST['allergies']) ? $_POST['allergies'] : null;
+    $additional_info = !empty($_POST['additional_info']) ? $_POST['additional_info'] : null;
+    $systolic_bp = !empty($_POST['systolic_bp']) ? $_POST['systolic_bp'] : null;
+    $diastolic_bp = !empty($_POST['diastolic_bp']) ? $_POST['diastolic_bp'] : null;
+    $hdl_cholesterol = !empty($_POST['hdl_cholesterol']) ? $_POST['hdl_cholesterol'] : null;
+    $ldl_cholesterol = !empty($_POST['ldl_cholesterol']) ? $_POST['ldl_cholesterol'] : null;
+    $fasting_blood_sugar = !empty($_POST['fasting_blood_sugar']) ? $_POST['fasting_blood_sugar'] : null;
+    $post_meal_blood_sugar = !empty($_POST['post_meal_blood_sugar']) ? $_POST['post_meal_blood_sugar'] : null;
+    $urea = !empty($_POST['urea']) ? $_POST['urea'] : null;
+    $creatinine = !empty($_POST['creatinine']) ? $_POST['creatinine'] : null;
+    $uric_acid = !empty($_POST['uric_acid']) ? $_POST['uric_acid'] : null;
+    $calcium = !empty($_POST['calcium']) ? $_POST['calcium'] : null;
 
-    // Profile Photo Upload
-    $profile_photo = null;
-    if (isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] == 0) {
-        $target_dir = "uploads/";
-        $profile_photo = $target_dir . basename($_FILES["profile_photo"]["name"]);
-        move_uploaded_file($_FILES["profile_photo"]["tmp_name"], $profile_photo);
-    }
+    // Basic validation for required fields
+    if (empty($gender) || empty($blood_group)) {
+        $error = "Gender and Blood Group are required fields.";
+    } else {
+        // Profile Photo Upload
+        $profile_photo = null;
+        if (isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] == 0) {
+            $target_dir = "uploads/";
+            $profile_photo = $target_dir . basename($_FILES["profile_photo"]["name"]);
+            move_uploaded_file($_FILES["profile_photo"]["tmp_name"], $profile_photo);
+        }
 
-    $conn->begin_transaction();
+        $conn->begin_transaction();
 
-    try {
-        // Insert or update user_profiles
-        $stmt = $conn->prepare("INSERT INTO user_profiles (user_id, profile_photo, age, gender, height, height_unit, weight, weight_unit, blood_group) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                ON DUPLICATE KEY UPDATE profile_photo=VALUES(profile_photo), age=VALUES(age), gender=VALUES(gender), 
-                                                        height=VALUES(height), height_unit=VALUES(height_unit), weight=VALUES(weight), 
-                                                        weight_unit=VALUES(weight_unit), blood_group=VALUES(blood_group)");
-        $stmt->bind_param("isissssss", $user_id, $profile_photo, $age, $gender, $height, $height_unit, $weight, $weight_unit, $blood_group);
-        $stmt->execute();
-        $stmt->close();
+        try {
+            // Insert or update user_profiles
+            $stmt = $conn->prepare("INSERT INTO user_profiles (user_id, profile_photo, age, gender, height, height_unit, weight, weight_unit, blood_group) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    ON DUPLICATE KEY UPDATE profile_photo=VALUES(profile_photo), age=VALUES(age), gender=VALUES(gender), 
+                                                            height=VALUES(height), height_unit=VALUES(height_unit), weight=VALUES(weight), 
+                                                            weight_unit=VALUES(weight_unit), blood_group=VALUES(blood_group)");
+            $stmt->bind_param("isissssss", $user_id, $profile_photo, $age, $gender, $height, $height_unit, $weight, $weight_unit, $blood_group);
+            $stmt->execute();
+            $stmt->close();
 
-        // Insert or update medical_history
-        $stmt = $conn->prepare("INSERT INTO medical_history (user_id, allergies, additional_info) 
-                                VALUES (?, ?, ?)
-                                ON DUPLICATE KEY UPDATE allergies=VALUES(allergies), additional_info=VALUES(additional_info)");
-        $stmt->bind_param("iss", $user_id, $allergies, $additional_info);
-        $stmt->execute();
-        $stmt->close();
+            // Insert or update medical_history
+            $stmt = $conn->prepare("INSERT INTO medical_history (user_id, allergies, additional_info) 
+                                    VALUES (?, ?, ?)
+                                    ON DUPLICATE KEY UPDATE allergies=VALUES(allergies), additional_info=VALUES(additional_info)");
+            $stmt->bind_param("iss", $user_id, $allergies, $additional_info);
+            $stmt->execute();
+            $stmt->close();
 
-        // Insert or update vital_statistics
-        $stmt = $conn->prepare("INSERT INTO vital_statistics (user_id, systolic_bp, diastolic_bp, hdl_cholesterol, ldl_cholesterol, fasting_blood_sugar, post_meal_blood_sugar) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?)
-                                ON DUPLICATE KEY UPDATE systolic_bp=VALUES(systolic_bp), diastolic_bp=VALUES(diastolic_bp), 
-                                                        hdl_cholesterol=VALUES(hdl_cholesterol), ldl_cholesterol=VALUES(ldl_cholesterol), 
-                                                        fasting_blood_sugar=VALUES(fasting_blood_sugar), post_meal_blood_sugar=VALUES(post_meal_blood_sugar)");
-        $stmt->bind_param("iiiiiii", $user_id, $systolic_bp, $diastolic_bp, $hdl_cholesterol, $ldl_cholesterol, $fasting_blood_sugar, $post_meal_blood_sugar);
-        $stmt->execute();
-        $stmt->close();
+            // Insert or update vital_statistics
+            $stmt = $conn->prepare("INSERT INTO vital_statistics (user_id, systolic_bp, diastolic_bp, hdl_cholesterol, ldl_cholesterol, fasting_blood_sugar, post_meal_blood_sugar) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                                    ON DUPLICATE KEY UPDATE systolic_bp=VALUES(systolic_bp), diastolic_bp=VALUES(diastolic_bp), 
+                                                            hdl_cholesterol=VALUES(hdl_cholesterol), ldl_cholesterol=VALUES(ldl_cholesterol), 
+                                                            fasting_blood_sugar=VALUES(fasting_blood_sugar), post_meal_blood_sugar=VALUES(post_meal_blood_sugar)");
+            $stmt->bind_param("iiiiiii", $user_id, $systolic_bp, $diastolic_bp, $hdl_cholesterol, $ldl_cholesterol, $fasting_blood_sugar, $post_meal_blood_sugar);
+            $stmt->execute();
+            $stmt->close();
 
-        // Insert or update renal_tests
-        $stmt = $conn->prepare("INSERT INTO renal_tests (user_id, urea, creatinine, uric_acid, calcium) 
-                                VALUES (?, ?, ?, ?, ?)
-                                ON DUPLICATE KEY UPDATE urea=VALUES(urea), creatinine=VALUES(creatinine), uric_acid=VALUES(uric_acid), calcium=VALUES(calcium)");
-        $stmt->bind_param("idddd", $user_id, $urea, $creatinine, $uric_acid, $calcium);
-        $stmt->execute();
-        $stmt->close();
+            // Insert or update renal_tests
+            $stmt = $conn->prepare("INSERT INTO renal_tests (user_id, urea, creatinine, uric_acid, calcium) 
+                                    VALUES (?, ?, ?, ?, ?)
+                                    ON DUPLICATE KEY UPDATE urea=VALUES(urea), creatinine=VALUES(creatinine), uric_acid=VALUES(uric_acid), calcium=VALUES(calcium)");
+            $stmt->bind_param("idddd", $user_id, $urea, $creatinine, $uric_acid, $calcium);
+            $stmt->execute();
+            $stmt->close();
 
-        // Mark profile as completed
-        $conn->query("UPDATE users SET profile_completed = 1 WHERE id = $user_id");
+            // Mark profile as completed
+            $conn->query("UPDATE users SET profile_completed = 1 WHERE id = $user_id");
 
-        $conn->commit();
-        $success = "Profile updated successfully!";
-        header("Location: dashboard.php");
-        exit();
-    } catch (Exception $e) {
-        $conn->rollback();
-        $error = "Error: " . $e->getMessage();
+            $conn->commit();
+            $success = "Profile updated successfully!";
+            header("Location: dashboard.php");
+            exit();
+        } catch (Exception $e) {
+            $conn->rollback();
+            $error = "Error: " . $e->getMessage();
+        }
     }
 }
 ?>
@@ -113,6 +118,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin: 0;
         }
         .hidden { display: none; }
+        .required::after {
+            content: ' *';
+            color: #ef4444;
+        }
         @media (max-width: 640px) {
             .text-2xl { font-size: 1.5rem; }
             .text-lg { font-size: 1rem; }
@@ -195,7 +204,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <i class="ri-user-3-line text-gray-400 ri-2x sm:ri-3x"></i>
                             <input type="file" name="profile_photo" id="profilePhoto" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
                         </div>
-                        <span class="text-xs sm:text-sm text-gray-600">Upload Photo</span>
+                        <span class="text-xs sm:text-sm text-gray-600">Upload Photo (Optional)</span>
                     </div>
                     
                     <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-6 w-full">
@@ -205,10 +214,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                         
                         <div>
-                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Gender</label>
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 required">Gender</label>
                             <div class="flex flex-wrap gap-2 sm:gap-4">
                                 <label class="flex items-center">
-                                    <input type="radio" name="gender" value="Male" class="w-3 sm:w-4 h-3 sm:h-4 text-primary" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'Male') ? 'checked' : ''; ?>>
+                                    <input type="radio" name="gender" value="Male" class="w-3 sm:w-4 h-3 sm:h-4 text-primary" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'Male') ? 'checked' : ''; ?> required>
                                     <span class="ml-1 sm:ml-2 text-xs sm:text-sm">Male</span>
                                 </label>
                                 <label class="flex items-center">
@@ -245,8 +254,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
                         <div class="col-span-2">
-                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Blood Group</label>
-                            <select name="blood_group" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 required">Blood Group</label>
+                            <select name="blood_group" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" required>
                                 <option value="">Select blood group</option>
                                 <option value="A+" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'A+') ? 'selected' : ''; ?>>A+</option>
                                 <option value="A-" <?php echo (isset($_POST['blood_group']) && $_POST['blood_group'] == 'A-') ? 'selected' : ''; ?>>A-</option>
@@ -266,7 +275,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h2 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Medical History</h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Allergies</label>
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Allergies (Optional)</label>
                         <div class="relative">
                             <input type="text" name="allergies" id="allergyInput" value="<?php echo isset($_POST['allergies']) ? htmlspecialchars($_POST['allergies']) : ''; ?>" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Type to add allergies">
                             <div id="allergyTags" class="flex flex-wrap gap-1 sm:gap-2 mt-1 sm:mt-2"></div>
@@ -274,21 +283,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     
                     <div>
-                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Additional Medical Information</label>
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Additional Medical Information (Optional)</label>
                         <textarea name="additional_info" class="w-full px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" rows="2" placeholder="Enter any additional medical information"><?php echo isset($_POST['additional_info']) ? htmlspecialchars($_POST['additional_info']) : ''; ?></textarea>
                     </div>
                 </div>
             </section>
 
             <section class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                <h2 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Vital Statistics</h2>
+                <h2 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Vital Statistics (Optional)</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-6">
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Blood Pressure</label>
                         <div class="flex gap-1 sm:gap-2 items-center">
-                            <input type="number" name="systolic_bp" value="<?php echo isset($_POST['systolic_bp']) ? htmlspecialchars($_POST['systolic_bp']) : ''; ?>" class="w-16 sm:w-24 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Systolic" min="1">
+                            <input type="number" name="systolic_bp" value="<?php echo isset($_POST['systolic_bp']) ? htmlspecialchars($_POST['systolic_bp']) : ''; ?>" class="w-16 sm:w-24 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Systolic" min="0">
                             <span class="text-gray-500">/</span>
-                            <input type="number" name="diastolic_bp" value="<?php echo isset($_POST['diastolic_bp']) ? htmlspecialchars($_POST['diastolic_bp']) : ''; ?>" class="w-16 sm:w-24 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Diastolic" min="1">
+                            <input type="number" name="diastolic_bp" value="<?php echo isset($_POST['diastolic_bp']) ? htmlspecialchars($_POST['diastolic_bp']) : ''; ?>" class="w-16 sm:w-24 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Diastolic" min="0">
                             <span class="text-xs sm:text-sm text-gray-500">mmHg</span>
                         </div>
                     </div>
@@ -316,12 +325,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </section>
 
             <section class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                <h2 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Renal Function Tests</h2>
+                <h2 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Renal Function Tests (Optional)</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-6">
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Urea</label>
                         <div class="flex gap-1 sm:gap-2 items-center">
-                            <input type="number" name="urea" value="<?php echo isset($_POST['urea']) ? htmlspecialchars($_POST['urea']) : ''; ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Enter value" step="0.01" min="7" max="20">
+                            <input type="number" name="urea" value="<?php echo isset($_POST['urea']) ? htmlspecialchars($_POST['urea']) : ''; ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Enter value" step="0.01">
                             <span class="text-xs sm:text-sm text-gray-500 whitespace-nowrap">mg/dL</span>
                         </div>
                     </div>
@@ -329,7 +338,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Creatinine</label>
                         <div class="flex gap-1 sm:gap-2 items-center">
-                            <input type="number" name="creatinine" value="<?php echo isset($_POST['creatinine']) ? htmlspecialchars($_POST['creatinine']) : ''; ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Enter value" step="0.01" min="0.7" max="1.3">
+                            <input type="number" name="creatinine" value="<?php echo isset($_POST['creatinine']) ? htmlspecialchars($_POST['creatinine']) : ''; ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Enter value" step="0.01">
                             <span class="text-xs sm:text-sm text-gray-500 whitespace-nowrap">mg/dL</span>
                         </div>
                     </div>
@@ -337,7 +346,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Uric Acid</label>
                         <div class="flex gap-1 sm:gap-2 items-center">
-                            <input type="number" name="uric_acid" value="<?php echo isset($_POST['uric_acid']) ? htmlspecialchars($_POST['uric_acid']) : ''; ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Enter value" step="0.01" min="3.5" max="7.2">
+                            <input type="number" name="uric_acid" value="<?php echo isset($_POST['uric_acid']) ? htmlspecialchars($_POST['uric_acid']) : ''; ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Enter value" step="0.01">
                             <span class="text-xs sm:text-sm text-gray-500 whitespace-nowrap">mg/dL</span>
                         </div>
                     </div>
@@ -345,7 +354,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Calcium</label>
                         <div class="flex gap-1 sm:gap-2 items-center">
-                            <input type="number" name="calcium" value="<?php echo isset($_POST['calcium']) ? htmlspecialchars($_POST['calcium']) : ''; ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Enter value" step="0.01" min="8.5" max="10.5">
+                            <input type="number" name="calcium" value="<?php echo isset($_POST['calcium']) ? htmlspecialchars($_POST['calcium']) : ''; ?>" class="flex-1 px-2 sm:px-4 py-1 sm:py-2 border border-gray-300 rounded-button focus:ring-2 focus:ring-primary focus:border-primary text-xs sm:text-sm" placeholder="Enter value" step="0.01">
                             <span class="text-xs sm:text-sm text-gray-500 whitespace-nowrap">mg/dL</span>
                         </div>
                     </div>
@@ -410,8 +419,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         });
 
         form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
+            const gender = form.querySelector('input[name="gender"]:checked');
+            const bloodGroup = form.querySelector('select[name="blood_group"]').value;
+
+            if (!gender || !bloodGroup) {
+                e.preventDefault();
+                showToast('Please fill in all required fields (Gender and Blood Group)');
+                return;
+            }
+
             // Collect allergies into a single string
             const allergyArray = Array.from(allergies);
             const hiddenInput = document.createElement('input');
@@ -419,8 +435,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             hiddenInput.name = 'allergies';
             hiddenInput.value = allergyArray.join(', ');
             this.appendChild(hiddenInput);
-
-            this.submit();
         });
 
         function showToast(message) {
@@ -432,13 +446,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         function updateProgress() {
-            const inputs = form.querySelectorAll('input, select, textarea');
-            let filled = 0;
-            inputs.forEach(input => {
-                if (input.value.trim() || (input.type === 'radio' && input.checked)) filled++;
+            const requiredInputs = form.querySelectorAll('[required]');
+            const allInputs = form.querySelectorAll('input, select, textarea');
+            let requiredFilled = 0;
+            let totalFilled = 0;
+
+            requiredInputs.forEach(input => {
+                if (input.type === 'radio') {
+                    if (form.querySelector(`input[name="${input.name}"]:checked`)) requiredFilled++;
+                } else if (input.value.trim()) requiredFilled++;
             });
-            const progress = (filled / inputs.length) * 100;
-            progressBar.style.width = `${progress}%`;
+
+            allInputs.forEach(input => {
+                if (input.value.trim() || (input.type === 'radio' && input.checked)) totalFilled++;
+            });
+
+            const requiredCompleted = (requiredFilled / requiredInputs.length) * 100;
+            progressBar.style.width = `${Math.min(requiredCompleted, 100)}%`;
         }
 
         form.querySelectorAll('input, select, textarea').forEach(input => {
